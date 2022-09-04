@@ -1,5 +1,6 @@
-import * as React from 'react';
-//Importing Screens (1&2)
+import React from 'react';
+
+//Importing Screens (Start and Chat)
 import Start from './components/Start';
 import Chat from './components/Chat';
 
@@ -10,14 +11,10 @@ import 'react-native-gesture-handler';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 
+//This is the navigator
 const Stack = createStackNavigator();
 
 export default class App extends React.Component {
-  constructor(props){
-    super(props);
-    this.state = { text:''};
-  }
-
   render() {
     return (
       <NavigationContainer>
