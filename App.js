@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Component } from 'react';
 
 //Importing Screens (Start and Chat)
 import Start from './components/Start';
@@ -14,7 +14,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 //This is the navigator
 const Stack = createStackNavigator();
 
-export default class App extends React.Component {
+export default class App extends Component {
   render() {
     return (
       <NavigationContainer>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Button, TextInput, StyleSheet } from 'react-native';
+import { View, Text, Button, StyleSheet } from 'react-native';
 
 export default class Chat extends React.Component {
   componentDidMount(){
@@ -8,6 +8,8 @@ export default class Chat extends React.Component {
   }
 
   render() {
+    const { bgColor } = this.props.route.params;
+
     return (
       <View style={{flex:1, justifyContent: 'center', alignItems: 'center'}}>
         <Text>Hello I am the chat screen!</Text>
@@ -19,3 +21,10 @@ export default class Chat extends React.Component {
     )
   }
 }
+
+const styles = StyleSheet.create({
+  chatView: {
+    flex: 1,
+  }
+
+})

@@ -1,8 +1,10 @@
-import React from 'react';
-import { View, Text, Button, TextInput, StyleSheet } from 'react-native';
-import { ImageBackground } from 'react-native-web';
+import React, { Component } from 'react';
+import { View, Text, TextInput, StyleSheet, ImageBackground, Pressable } from 'react-native';
+//Importing the background image from the assest folder.
+import bgScreenImage from '../assets/background-image.png'; 
+import { TouchableOpacity } from 'react-native-gesture-handler';
 
-export default class Start extends React.Component {
+export default class Start extends Component {
   constructor(props){
     super(props);
     this.state = { 
@@ -27,20 +29,63 @@ export default class Start extends React.Component {
   render() {
     return (
       <View style={ styles.container }>
-        <ImageBackground 
-        source={ backgroundImage }
-        >
+        <ImageBackground source={ bgScreenImage } style={styles.backgroundImage}>
+          <Text style={styles.title}>
+            FoliFF {"\n"} Chat App
+          </Text>
+          <View style={styles.mainBox}>
+            {/*This is the input box to enter your name*/}
+            <View style={styles.inputBox}>
+              <TextInput
+                style={styles.input}
+                onChangeText={(name) => this.setState({ name })}
+                value={this.state.name}
+                placeholder="Your name"
+              />
+            </View>
 
-          
+            <View style={styles.colorWrapper}>
+              <Text style={styles.chooseColor}>
+                {" "}
+                Choose your backgroud color:
+                {" "}
+              </Text>
+            </View>
+
+            {/* The colours to change the background are here */}
+            <View style={styles.colorRow}>
+              <TouchableOpacity 
+                style={styles.color1} 
+                onPress={ () => this.changeBgColor(this.colors.black)}
+              />
+              <TouchableOpacity 
+                style={styles.color2} 
+                onPress={ () => this.changeBgColor(this.colors.purple)}
+              />
+              <TouchableOpacity 
+                style={styles.color3} 
+                onPress={ () => this.changeBgColor(this.colors.grey)}
+              />
+              <TouchableOpacity 
+                style={styles.color4} 
+                onPress={ () => this.changeBgColor(this.colors.green)}
+              />
+            </View>
+
+            {/*Allows the user to click on the button and be redirected to the chat page. */}
+            <Pressable
+              style={styles.button}
+              onPress={() =>
+                this.props.navigation.navigate("Chat", {
+                  name: this.state.name,
+                  bgColor: this.state.bgColor,
+                })
+              }
+            >
+              <Text style={styles.buttonText}>Start Chatting</Text>
+            </Pressable>
+          </View>
         </ImageBackground>
-        <Text>Hello! Welcome to Homescreen!</Text>
-
-        <Button
-          title="Go to Chat"
-          onPress={() => 
-            this.props.navigation.navigate('Chat', {name: this.setState.name})
-          }
-        />
       </View>
     )
   }
@@ -51,50 +96,43 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-
+  //The demension of the background image according to the project brief
   backgroundImage: {
     flex: 1,
-    width: "100%",
+    resizeMode: 'cover',
+    flexDirection: 'column',
     alignItems: "center",
-    justifyContent: "center",
   },
-
-  titleBox: {
-    height: "40%",
-    width: "88%",
-    alignItems: "center",
-    paddingTop: 100,
-  },
-
+  
+  //Dimension for the title name of my app :D
   title: {
+    flex: 1,
     fontSize: 45,
-    fontWeight: "600",
-    color: "#FFFFFF",
+    fontWeight: '600',
+    color: '#FFFFFF',
+    padding: '20%',
+    textAlign: 'center'
   },
-
-  box1: {
-    backgroundColor: "#FFFFFF",
-    height: "46%",
-    width: "88%",
+  
+  //Dimension for the box that will contain to start chatting.
+  mainBox: {
+    flex: 1,
+    width: '88%',
+    height: '44%',
+    backgroundColor: '#FFFFFF',
     justifyContent: "space-around",
-    alignItems: "center",
+    alignItems: 'center'
   },
 
   inputBox: {
-    borderWidth: 2,
-    borderRadius: 1,
-    borderColor: "grey",
-    width: "88%",
-    height: 60,
+    width: '88%',
     paddingLeft: 20,
-    flexDirection: "row",
-    alignItems: "center",
-  },
-
-  image: {
-    width: 20,
-    height: 20,
-    marginRight: 10,
+    height: 50,
+    borderColor: 'gray',
+    borderWidth: 2,
+    borderRadius: 2,
+    flexDirection: 'row',
+    alignItems: 'center'
   },
 
   input: {
@@ -104,10 +142,11 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
 
-  colorBox: {
+  colorWrapper:{
     marginRight: "auto",
     paddingLeft: 15,
-    width: "88%",
+    width: '88%',
+    alignItems: "center"
   },
 
   chooseColor: {
@@ -117,10 +156,10 @@ const styles = StyleSheet.create({
     opacity: 100,
   },
 
-  colorArray: {
+  colorRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    width: "80%",
+    width: "80%"
   },
 
   color1: {
