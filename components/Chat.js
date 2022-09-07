@@ -11,7 +11,7 @@ export default class Chat extends React.Component {
     const { bgColor } = this.props.route.params;
 
     return (
-      <View style={{flex:1, justifyContent: 'center', alignItems: 'center'}}>
+      <View style={styles.chatView}>
         <Text>Hello I am the chat screen!</Text>
         <Button 
           title='Go to Start'
@@ -25,6 +25,8 @@ export default class Chat extends React.Component {
 const styles = StyleSheet.create({
   chatView: {
     flex: 1,
+    justifyContent: 'center', 
+    alignItems: 'center'
   }
 
 })
