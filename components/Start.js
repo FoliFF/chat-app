@@ -22,7 +22,7 @@ export default class Start extends Component {
     black: "#090C08",
     purple: "#474056",
     grey: "#8A95A5",
-    green: "B9C6AE",
+    green: "#B9C6AE",
     blue: "#1B70A0",
   };
 
