@@ -1,10 +1,19 @@
 import React from 'react';
-import { View, Text, Button, StyleSheet, KeyboardAvoidingView  } from 'react-native';
+import { View, Text, Button, StyleSheet, KeyboardAvoidingView, Platform  } from 'react-native';
 import { Bubble, GiftedChat } from 'react-native-gifted-chat';
-
 //Firebase Database
 const firebase = require('firebase');
 require('firebase/firestore');
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyBzXc8inzPKXzu-p-Y1u3u0pPUXFAxUoow",
+  authDomain: "chatapp-db941.firebaseapp.com",
+  projectId: "chatapp-db941",
+  storageBucket: "chatapp-db941.appspot.com",
+  messagingSenderId: "111432154554",
+  appId: "1:111432154554:web:0c8398043a2e2e5958b183"
+};
 
 export default class Chat extends React.Component {
   constructor() {
@@ -19,16 +28,6 @@ export default class Chat extends React.Component {
       },
     };
   
-    // Your web app's Firebase configuration
-    const firebaseConfig = {
-      apiKey: "AIzaSyBzXc8inzPKXzu-p-Y1u3u0pPUXFAxUoow",
-      authDomain: "chatapp-db941.firebaseapp.com",
-      projectId: "chatapp-db941",
-      storageBucket: "chatapp-db941.appspot.com",
-      messagingSenderId: "111432154554",
-      appId: "1:111432154554:web:0c8398043a2e2e5958b183"
-    };
-
     if (!firebase.apps.length){
       firebase.initializeApp(firebaseConfig);
     }
@@ -40,7 +39,7 @@ export default class Chat extends React.Component {
   componentDidMount(){
     let name = this.props.route.params.name;
     this.props.navigation.setOptions({ title: name });
-
+    /*
     this.setState({
       messages: [
         {
@@ -61,8 +60,10 @@ export default class Chat extends React.Component {
         },
       ]
     });
+    */
 
     //User authentication
+    
     this.authUnsubscribe = firebase.auth().onAuthStateChanged((user) => {
       if (!user) {
         firebase.auth().signInAnonymously();
@@ -70,15 +71,16 @@ export default class Chat extends React.Component {
       this.setState({
         uid: user.uid,
         messages: [],
-        user: {
-          _id: user.uid,
-          name: name,
-        },
       });
       this.unsubscribe = this.referenceChatMessages
         .orderBy("createdAt", "desc")
         .onSnapshot(this.onCollectionUpdate);
     });
+
+    this.unsubscribeMessages = this.referenceChatMessages
+      .orderBy('createdAt', 'desc')
+      .onSnapshot(this.onCollectionUpdate);
+    
   }
 
   onSend(messages = []) {
@@ -94,7 +96,7 @@ export default class Chat extends React.Component {
     // go through each document
     querySnapshot.forEach((doc) => {
       // get the QueryDocumentSnapshot's data
-      let data = doc.data();
+      var data = doc.data();
       messages.push({
         _id: data._id,
         text: data.text,
@@ -102,9 +104,13 @@ export default class Chat extends React.Component {
         user: data.user,
       });
     });
+    this.setState({
+      messages: messages,
+    });
   }
 
-  addMessages = (message) => {
+  addMessages() {
+    const message = this.state.messages[0];
     this.referenceChatMessages.add({
       uid: this.state.uid,
       _id: message._id,
@@ -133,7 +139,7 @@ export default class Chat extends React.Component {
     // stop listening to authentication
     this.authUnsubscribe();
     // stop listening for changes
-    this.unsubscribeListUser();
+    this.unsubscribeMessages();
   }
 
   render() {
@@ -147,7 +153,11 @@ export default class Chat extends React.Component {
           renderBubble={this.renderBubble.bind(this)}
           messages={this.state.messages}
           onSend={messages => this.onSend(messages)}
-          user={{ _id: 1 }}
+          user={{
+            _id: this.state.user._id,
+            name: name,
+            avatar: this.state.user.avatar,
+          }}
         />
         <Button 
           title='Go to Start'
