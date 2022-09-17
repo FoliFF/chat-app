@@ -22,7 +22,7 @@ export default class App extends Component {
           <Stack.Screen name="Start" component={Start}/>
           <Stack.Screen name="Chat" component={Chat}/>
         </Stack.Navigator>
-    </NavigationContainer>
+      </NavigationContainer>
     );
   }
 }
