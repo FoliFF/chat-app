@@ -1,9 +1,10 @@
 import React from 'react';
-import { View, Text, Button, StyleSheet, KeyboardAvoidingView, Platform  } from 'react-native';
+import { View, Text, Button, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
 import { Bubble, GiftedChat, InputToolbar } from 'react-native-gifted-chat';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import NetInfo from '@react-native-community/netinfo';
-//import CustomActions from '../components/CostomAction';
+import CustomActions from '../components/CostomAction';
+import MapView from 'react-native-maps';
 
 // Firebase Database
 const firebase = require('firebase');
@@ -167,19 +168,43 @@ export default class Chat extends React.Component {
     )
   }
 
+  // Hides chat to prevent usage when offline.
   renderInputToolbar(props) {
     if (this.state.isConnected == false) {
     } else {
       return(
-        <InputToolbar
-        {...props}
-        />
+        <InputToolbar {...props} />
       );
     }
   }
 
+  // creating the circle button
   renderCustomActions = (props) => {
     return <CustomActions {...props} />;
+  };
+
+  // creating the map location
+  renderCustomView = (props) => {
+    const { currentMessage} = props;
+    if (currentMessage.location){
+      return(
+        <MapView
+          style={{
+            width: 150,
+            height: 100,
+            borderRadius: 13,
+            margin: 3 
+          }} 
+          region={{
+            latitude: currentMessage.location.latitude,
+            longitude: currentMessage.location.longitude,
+            latitudeDelta: 0.0922,
+            longitudeDelta: 0.0421,
+          }}
+        />
+      );
+    }
+    return null;
   };
 
   componentWillUnmount(){
@@ -198,7 +223,8 @@ export default class Chat extends React.Component {
     return (
       <View style={[{backgroundColor: bgColor}, styles.container]}>
         <GiftedChat
-          //{/*renderActions={this.renderCustomActions}*/}
+          renderActions={this.renderCustomActions}
+          renderCustomView={this.renderCustomView}
           renderBubble={this.renderBubble.bind(this)}
           renderInputToolbar={this.renderInputToolbar.bind(this)}
           messages={this.state.messages}

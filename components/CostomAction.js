@@ -1,11 +1,11 @@
 import React from "react";
-import { StyleSheet, View, Container, Button } from 'react-native';
-import { connectActionSheet } from '@expo/react-native-action-sheet';
+import PropTypes from 'prop-types';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import * as Permissions from 'expo-permissions';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
-import MapView from 'react-native-maps';
-import { TouchableOpacity } from "react-native-gesture-handler";
+import firebase from "firebase";
+import firestore from "firebase";
 
 class CustomActions extends React.Component{
     state = {
@@ -28,6 +28,31 @@ class CustomActions extends React.Component{
         }
     };
 
+    uploadImage = async (uri) => {
+        const blob = await new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.onload = function(){
+                resolve(xhr.response);
+            };
+            xhr.onerror = function(e){
+                console.log(e);
+                reject(new TypeError('Network Request Failed'));
+            };
+            xhr.responseType = 'blob';
+            xhr.open('GET', uri, true);
+            xhr.send(null);
+        });
+        const imageNameBefore = uri.split("/");
+        const imageName = imageNameBefore[imageNameBefore.length - 1];
+
+        const ref = firebase.storage().ref().child(`images/${imageName}`);
+
+        const snapshot = await ref.put(blob);
+        blob.close();
+
+        return await snapshot.ref.getDownloadURL();
+    };
+
     takePhoto = async () => {
         const { status } = await Permissions.askAsync(Permissions.CAMERA_ROLL, Permissions.CAMERA);
         if (status === 'granted') {
@@ -41,21 +66,46 @@ class CustomActions extends React.Component{
     };
 
     getLocation = async () => {
-        const { status } = await Permissions.askAsync(Permissions.LOCATION);
-        if(status === 'granted') {
-            let result = await Location.getCurrentPositionAsync({});
-            if (result) {
-                this.setState({
-                    location: result
-                });
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        try{
+            if(status === 'granted') {
+                let result = await Location.getCurrentPositionAsync({});
+                if (result) {
+                    this.props.onSend({
+                        location: {
+                            longitude: result.coords.longitude,
+                            latitude: result.coords.latitude,
+                        },
+                    });
+                }
             }
+        } catch(error){
+            console.log(error.message);
         }
     };
 
     onActionPress = () => {
         const options = ['Choose From Library', 'Take Pictures', 'Send Location', 'Cancel'];
         const cancelButtonIndex = options.length -1;
-        //this.context.actionSheet().showActionSheetWithOptions()
+        this.context.actionSheet().showActionSheetWithOptions(
+            {
+                options,
+                cancelButtonIndex,
+            },
+            async (buttonIndex) => {
+                switch (buttonIndex){
+                    case 0:
+                        console.log('User wants to pick a image');
+                        return;
+                    case 1:
+                        console.log('User wants to take a picture');
+                        return;
+                    case 2:
+                        console.log('User wants to get their location');
+                    default:
+                }
+            }
+        );
     };
 
     render(){
@@ -91,26 +141,6 @@ const styles = StyleSheet.create({
     },
 });
 
-
-
-
-{/*
-                <Button title="Pick an image from the library" onPress={this.pickImage}/>
-                    <Button title="Take a photo" onPress={this.takePhoto} />
-                    {this.state.image &&
-                        <Image source={{ uri: this.state.image.uri }} style={{ width: 200, height: 200 }} />
-                    }
-
-                    <Button title="Get my location" onPress={this.getLocation} />
-                    {this.state.location && 
-                        <MapView 
-                            style={{ width: 300, height: 200 }}
-                            region={{
-                                latitude: this.state.location.coords.latitude,
-                                longitude: this.state.location.coords.longitude,
-                                latitudeDelta: 0.0922,
-                                longitudeDelta: 0.0421,
-                            }}
-                        />
-                    }
-*/}
+CustomActions.contextTypes = {
+    actionSheet: PropTypes.func,
+};
