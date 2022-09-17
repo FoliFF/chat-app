@@ -22,7 +22,6 @@ export default class Chat extends React.Component {
       },
       isConnected: false,
     };
-
     // Your web app's Firebase configuration
     const firebaseConfig = {
       apiKey: "AIzaSyBzXc8inzPKXzu-p-Y1u3u0pPUXFAxUoow",
@@ -32,11 +31,9 @@ export default class Chat extends React.Component {
       messagingSenderId: "111432154554",
       appId: "1:111432154554:web:0c8398043a2e2e5958b183"
     };
-  
     if (!firebase.apps.length){
       firebase.initializeApp(firebaseConfig);
     }
-
     // Refering to Firestore collection
     this.referenceChatMessages = firebase.firestore().collection("messages");
   }
@@ -51,7 +48,6 @@ export default class Chat extends React.Component {
         this.unsubscribe = this.referenceChatMessages
           .orderBy('createdAt', 'desc')
           .onSnapshot(this.onCollectionUpdate);
-
         this.authUnsubscribe = firebase
           .auth()
           .onAuthStateChanged(async (user) => {
@@ -70,10 +66,12 @@ export default class Chat extends React.Component {
             });
           });
         this.saveMessages();
+        console.log('Online');
       } else {
         this.setState({ isConnected: false });
         // get saved messages from local AsyncStorage
         this.getMessages();
+        console.log('Offline');
       }
     });
   }
@@ -185,17 +183,12 @@ export default class Chat extends React.Component {
   };
 
   componentWillUnmount(){
-
     if (this.state.isConnected) {
       // Stop listening to authentication
       this.authUnsubscribe();
       // Stop listening for changes
       this.unsubscribe();
     }
-    // Stop listening to authentication
-//    this.authUnsubscribe();
-    // Stop listening for changes
-  //  this.unsubscribe();
   }
 
   render() {
