@@ -221,7 +221,7 @@ export default class Chat extends React.Component {
     this.props.navigation.setOptions({ title: name })
 
     return (
-      <View style={[{backgroundColor: bgColor}, styles.container]}>
+      <View style={{ backgroundColor: bgColor, flex: 1 }}>
         <GiftedChat
           renderActions={this.renderCustomActions}
           renderCustomView={this.renderCustomView}
@@ -237,10 +237,6 @@ export default class Chat extends React.Component {
         />
         { /* This make sure that there will be no error displaying of keyboard for android devices */ }
         { Platform.OS === 'android' ? <KeyboardAvoidingView behavior="height" /> : null }
-        <Button 
-          title='Go to Start'
-          onPress={() => this.props.navigation.navigate("Start")}
-        />
       </View>
     )
   }
@@ -249,10 +245,6 @@ export default class Chat extends React.Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-
-  text: {
-    color: '#fff'
   },
   
   bubble: {

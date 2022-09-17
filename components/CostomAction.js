@@ -1,9 +1,12 @@
 import React from "react";
 import PropTypes from 'prop-types';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+
+import { connectActionSheet } from "@expo/react-native-action-sheet";
 import * as Permissions from 'expo-permissions';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
+
 import firebase from "firebase";
 import firestore from "firebase";
 
@@ -13,21 +16,25 @@ class CustomActions extends React.Component{
         location: null,
     };
 
+    // Allowing the user to pick images from their device.
     pickImage = async () => {
-        const { status } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
-     
-        if(status === 'granted') {
-            let result = await ImagePicker.launchImageLibraryAsync({
-                mediaTypes: 'Images',})
-                .catch(error => console.log(error));     
-            if (!result.cancelled) {
-                this.setState({
-                    image: result
-                });  
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        try{
+            if(status === 'granted') {
+                let result = await ImagePicker.launchImageLibraryAsync({
+                    mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                    }).catch(error => console.log(error));     
+                if (!result.cancelled) {
+                    const imageUrl = await this.uploadImage(result.uri);
+                    this.props.onSend({ image: imageUrl });
+                }
             }
+        } catch (error){
+            console.log(error.message);
         }
     };
 
+    // Uploading Images to chat
     uploadImage = async (uri) => {
         const blob = await new Promise((resolve, reject) => {
             const xhr = new XMLHttpRequest();
@@ -53,18 +60,25 @@ class CustomActions extends React.Component{
         return await snapshot.ref.getDownloadURL();
     };
 
+    // Allows the user to use their camera to take a photo.
     takePhoto = async () => {
-        const { status } = await Permissions.askAsync(Permissions.CAMERA_ROLL, Permissions.CAMERA);
-        if (status === 'granted') {
-            let result = await ImagePicker.launchCameraAsync().catch(error => console.log(error));
-            if (!result.cancelled) {
-                this.setState({
-                    image: result
-                });
+        const { status } = await ImagePicker.requestCameraPermissionsAsync();
+        try {
+            if (status === "granted") {
+                let result = await ImagePicker.launchCameraAsync({
+                    mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                    }).catch((error) => console.log(error));
+                if (!result.cancelled) {
+                    const imageUrl = await this.uploadImage(result.uri);
+                    this.props.onSend({ image: imageUrl });
+                }
             }
+        } catch (error) {
+          console.log(error.message);
         }
     };
 
+    // Permision to get the GPS location of the user
     getLocation = async () => {
         const { status } = await Location.requestForegroundPermissionsAsync();
         try{
@@ -84,10 +98,15 @@ class CustomActions extends React.Component{
         }
     };
 
+    // Action Sheet
     onActionPress = () => {
-        const options = ['Choose From Library', 'Take Pictures', 'Send Location', 'Cancel'];
+        const options = ['Choose From Library', 
+            'Take Pictures', 
+            'Send Location', 
+            'Cancel'
+        ];
         const cancelButtonIndex = options.length -1;
-        this.context.actionSheet().showActionSheetWithOptions(
+        this.props.showActionSheetWithOptions(
             {
                 options,
                 cancelButtonIndex,
@@ -96,13 +115,18 @@ class CustomActions extends React.Component{
                 switch (buttonIndex){
                     case 0:
                         console.log('User wants to pick a image');
-                        return;
+                        this.pickImage();
+                        break;
                     case 1:
                         console.log('User wants to take a picture');
-                        return;
+                        this.takePhoto();
+                        break;
                     case 2:
                         console.log('User wants to get their location');
+                        this.getLocation();
+                        break;
                     default:
+                        break;
                 }
             }
         );
@@ -110,7 +134,14 @@ class CustomActions extends React.Component{
 
     render(){
         return(
-            <TouchableOpacity style={styles.container} onPress={this.onActionPress}>
+            <TouchableOpacity 
+                accessible={true}
+                accessibilityLabel="Options"
+                accessibilityHint="You can choose to send an image or your location"
+                accessibilityRole="button"
+                style={styles.container} 
+                onPress={this.onActionPress}
+            >
                 <View style={[styles.wrapper, this.props.wrapperStyle]}>
                     <Text style={[styles.iconText, this.props.iconTextStyle]}>+</Text>
                 </View>
@@ -144,3 +175,7 @@ const styles = StyleSheet.create({
 CustomActions.contextTypes = {
     actionSheet: PropTypes.func,
 };
+
+const ConnectedApp = connectActionSheet(CustomActions);
+
+export default ConnectedApp;
